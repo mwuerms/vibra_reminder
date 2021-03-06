@@ -344,4 +344,12 @@ Wire Wire Line
 	5700 2800 5900 2800
 Wire Wire Line
 	5900 2800 5900 3100
+NoConn ~ 1850 2300
+NoConn ~ 1850 2400
+NoConn ~ 5700 2600
+NoConn ~ 5700 2900
+NoConn ~ 5700 3000
+NoConn ~ 5700 3100
+Text Notes 7050 1700 0    50   ~ 0
+PINBELEGUNG MCP1802T\nPIN 3 SHDN\nPIN 4 NC!!!!!\n!!!!!!!!!!!!!!!!!!!!!!!!!
 $EndSCHEMATC
