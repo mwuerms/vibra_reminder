@@ -1,6 +1,6 @@
 /**
- * Martin Wuerms
- * 2015-09-13
+ * Martin Egli
+ * 2021-03-06
  *
  * attiny85 pin description
  * name     pin     functions (attiny85)
@@ -13,16 +13,16 @@
  * VCC      8       2.7 ... 5.5 V
  * GND      4
  *
- * pin usage on project "backlight"
+ * pin usage on project "vibra"
  * name     signal
- * PB0      AVREF to measure VBAT
- * PB1      VCC-enable for LEDs, high: disable, low: enable, using P-FET to switch power
- * PB2      button, internal pullup, INT0 for wakeup
- * PB3      serial signal for LEDs1
- * PB4      serial signal for LEDs2
+ * PB0      
+ * PB1      
+ * PB2      
+ * PB3      
+ * PB4      
  * PB5      Reset
  *
- * pin usage on pcb
+ * pin usage on pcb "v01"
  * name     signal
  * PB2      button, internal pullup, INT0 for wakeup
  * PB3      USB D+
@@ -103,17 +103,15 @@ static void init(void) {
 int main (void)
 {
     uint8_t local_events = 0;
-    uint8_t button_state = 0;
     init();
 
-    // start
-    wdtTimer_StartTimeout(1, cEV_TIMER_INTERVAL_0_125S, fEV_TICK_TIMER);
-    state = cST_ANIMATE;
+    // start, 1 s timeout
+    wdtTimer_StartTimeout(8, cEV_TIMER_INTERVAL_0_125S, fEV_TICK_TIMER);
 
     while(1) {
 
 		if(local_events & fEV_TICK_TIMER) {
-			wdtTimer_StartTimeout(1, cEV_TIMER_INTERVAL_0_125S, fEV_TICK_TIMER);
+			wdtTimer_StartTimeout(8, cEV_TIMER_INTERVAL_0_125S, fEV_TICK_TIMER);
 		}
 
         while(1) {
