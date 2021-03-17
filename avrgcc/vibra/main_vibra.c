@@ -15,18 +15,11 @@
  *
  * pin usage on project "vibra"
  * name     signal
- * PB0      
- * PB1      
- * PB2      
- * PB3      
- * PB4      
- * PB5      Reset
- *
- * pin usage on pcb "v01"
- * name     signal
- * PB2      button, internal pullup, INT0 for wakeup
- * PB3      USB D+
- * PB4      USB D-
+ * PB0      switch, pullup
+ * PB1      switch, pullup
+ * PB2      en vibra motor
+ * PB3      unused, debug out
+ * PB4      led out
  * PB5      Reset
  */
 
@@ -43,17 +36,20 @@
 //typedef void *(* state_handler_t)(void);
 
 /* - defines ---------------------------------------------------------------- */
+#define GPIO_SWITCH0_IN _BV(0)
+#define GPIO_SWITCH1_IN _BV(1)
+#define GPIO_VIBRA_EN   _BV(2)
+#define GPIO_DEBUG_OUT  _BV(3)
+#define GPIO_LED_OUT    _BV(4)
+
+#define VIBRA_TIMEOUT_10s   (10)
+#define VIBRA_TIMEOUT_30min (30*60)
+#define VIBRA_TIMEOUT_60min (60*60)
 
 /* - variables -------------------------------------------------------------- */
 volatile uint8_t global_events;
 #define fEV_TICK_TIMER     _BV(0)
 #define fEV_BUTTON_WAKE    _BV(1)
-
-//static state_handler_t state_func;
-static uint8_t state;
-#define cST_BOOT        (0)
-#define cST_ANIMATE     (1)
-#define cST_OFF         (2)
 
 /* - private functions  ----------------------------------------------------- */
 /**
@@ -82,17 +78,25 @@ static void _EnterSleepMode(uint8_t mode) {
  * initialize all components
  */
 static void init(void) {
-    uint8_t vbat;
+    //uint8_t vbat;
     cli();
 
-    PRR = 0xFF;
+    // DISABLE BOD in FUSE bits
+    PRR = 0xFF; // disable CLK for Timer0, Timer1, USI, ADC
     global_events = 0;
-    state = cST_BOOT;
+
+    // set gpios out
+    DDRB = (GPIO_VIBRA_EN | GPIO_LED_OUT);
 
     /*vbat = vbat_Get(cVREF_VCC);
     send_SeialMSB(vbat, _BV(0));*/
     sei();
 }
+
+#define gpio_VibraOn()      PORTB |=  GPIO_VIBRA_EN
+#define gpio_VibraOff()     PORTB &= ~GPIO_VIBRA_EN
+#define gpio_LEDOn()        PORTB |=  GPIO_LED_OUT
+#define gpio_LEDOff()       PORTB &= ~GPIO_LED_OUT
 
 /* - public functions ------------------------------------------------------- */
 
@@ -102,15 +106,49 @@ static void init(void) {
 #include <util/delay.h>
 int main (void)
 {
+    uint16_t vibra_timeout_cnt = 0;
+    uint8_t led_cnt = 0;
     uint8_t local_events = 0;
     init();
 
     // start, 1 s timeout
     wdtTimer_StartTimeout(8, cEV_TIMER_INTERVAL_0_125S, fEV_TICK_TIMER);
-
+    /* calc timeout counts
+     * -- using WDT intervals -------------------------------------
+     * 60 min = 60 * 60 * 8 WDT intervals = 28800 cnts -> 16 bit
+     * 30 min = 30 * 60 * 8 WDT intervals = 14400 cnts -> 16 bit
+     *  1 min =  1 * 60 * 8 WDT intervals =   480 cnts -> 16 bit
+     * -- using 1 s intervals -------------------------------------
+     * 60 min = 60 * 60 * 1 s interval = 3600 cnts -> 16 bit
+     * 30 min = 30 * 60 * 1 s interval = 1800 cnts -> 16 bit
+     *  1 min =  1 * 60 * 1 s interval =   60 cnts ->  8 bit
+     * -- conclusion ----------------------------------------------
+     * use uint16_t vibra_timeout_cnt using 1 s intervals
+     */
+    vibra_timeout_cnt = 0; // vibra at start up
+    led_cnt = 0;
     while(1) {
 
 		if(local_events & fEV_TICK_TIMER) {
+
+            gpio_VibraOff();
+            if(vibra_timeout_cnt) {
+                vibra_timeout_cnt--;
+            }
+            else {
+                // timeout -> enable vibra
+                vibra_timeout_cnt = VIBRA_TIMEOUT_10s;//VIBRA_TIMEOUT_30min;
+                gpio_VibraOn();
+            }
+            gpio_LEDOff();
+            if(led_cnt) {
+                led_cnt--;
+            }
+            else {
+                led_cnt = 10;
+                gpio_LEDOn();
+            }
+
 			wdtTimer_StartTimeout(8, cEV_TIMER_INTERVAL_0_125S, fEV_TICK_TIMER);
 		}
 
@@ -122,6 +160,7 @@ int main (void)
                 sei();
                 break;
             }
+            // Power-down mode + WDT enabled = 10 uA ? datasheet ATTiny85, p 162
             _EnterSleepMode(SLEEP_MODE_PWR_DOWN);   // 200 uA
         }
     }

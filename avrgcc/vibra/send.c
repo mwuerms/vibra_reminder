@@ -25,7 +25,7 @@
  * @param   value       to send
  * @param   pin_mask
  */
-void send_SeialMSB(uint8_t value, uint8_t pin_mask) {
+void send_SerialMSB(uint8_t value, uint8_t pin_mask) {
     uint8_t i;
     DDRB |= pin_mask;
     PORTB &= ~pin_mask;

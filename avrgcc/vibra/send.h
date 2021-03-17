@@ -15,6 +15,6 @@
 /* - typedef ---------------------------------------------------------------- */
 
 /* - public functions ------------------------------------------------------- */
-void send_SeialMSB(uint8_t value, uint8_t pin_mask);
+void send_SerialMSB(uint8_t value, uint8_t pin_mask);
 
 #endif /* _SEND_H_ */
