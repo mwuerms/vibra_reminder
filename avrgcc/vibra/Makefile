@@ -74,7 +74,8 @@ OBJDIR = obj
 
 # List C source files here. (C dependencies are automatically generated.)
 ifeq ($(TARGET),vibra)
-	SRC = main_vibra.c wdtTimer.c vbat.c send.c button.c
+	SRC = main_vibra.c wdtTimer.c
+	#vbat.c send.c button.c
 endif
 
 
@@ -266,7 +267,7 @@ AVRDUDE_PORT = usb
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
-#AVRDUDE_WRITE_FUSES = -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0x01:m # attiny85, 8MHz, DIV/1
+AVRDUDE_WRITE_FUSES = -U lfuse:w:0xe2:m -U hfuse:w:0xdf:m -U efuse:w:0xff:m # attiny85, 8MHz, DIV/1
 
 # Uncomment the following if you want avrdude's erase cycle counter.
 # Note that this counter needs to be initialized first using -Yn,
