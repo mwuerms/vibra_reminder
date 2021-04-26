@@ -44,6 +44,7 @@
 
 #define VIBRA_TIMEOUT_10s   (10)
 #define VIBRA_TIMEOUT_30min (30*60)
+#define VIBRA_TIMEOUT_45min (45*60)
 #define VIBRA_TIMEOUT_60min (60*60)
 
 /* - variables -------------------------------------------------------------- */
@@ -137,7 +138,8 @@ int main (void)
             }
             else {
                 // timeout -> enable vibra
-                vibra_timeout_cnt = VIBRA_TIMEOUT_10s;//VIBRA_TIMEOUT_30min;
+                //vibra_timeout_cnt = VIBRA_TIMEOUT_10s;
+                vibra_timeout_cnt = VIBRA_TIMEOUT_45min;
                 gpio_VibraOn();
             }
             gpio_LEDOff();
@@ -161,7 +163,8 @@ int main (void)
                 break;
             }
             // Power-down mode + WDT enabled = 10 uA ? datasheet ATTiny85, p 162
-            _EnterSleepMode(SLEEP_MODE_PWR_DOWN);   // 200 uA
+            // measured 2021-03-22 ca. 6 uA, 20 °C, UNI-T, UT139C
+            _EnterSleepMode(SLEEP_MODE_PWR_DOWN);
         }
     }
     return(0);
